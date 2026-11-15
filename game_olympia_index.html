@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đường Lên Đỉnh Olympia - Lăng Kính Tri Ân 20/11 (KHTN 9)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .font-olympia {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Hiệu ứng dải màu tán sắc cầu vồng */
+        .prism-gradient {
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #6366f1, #a855f7);
+        }
+        .prism-border {
+            position: relative;
+            background-clip: padding-box;
+            border: 2px solid transparent;
+        }
+        .prism-border::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: -1;
+            margin: -2px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #6366f1, #a855f7);
+        }
+        /* Hiệu ứng ngôi sao hy vọng */
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 8px #fbbf24); }
+            50% { transform: scale(1.15) rotate(10deg); filter: drop-shadow(0 0 20px #f59e0b); }
+        }
+        .star-active {
+            animation: pulse-gold 1.5s infinite ease-in-out;
+        }
+        /* Hiệu ứng tia sáng lăng kính */
+        @keyframes beam-glow {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(255,255,255,0.8)); }
+        }
+        .light-beam {
+            animation: beam-glow 2s infinite;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-900">
+
+    <!-- ==================== HEADER: THANH ĐIỀU HƯỚNG & BẢNG ĐIỂM 4 ĐỘI ==================== -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-700/80 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- Logo & Tên Game -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchScreen('home')">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 flex items-center justify-center shadow-md shadow-orange-500/20 border border-amber-200/40">
+                    <i class="fa-solid fa-award text-2xl text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Tri Ân 20/11</span>
+                        <span class="text-xs font-semibold text-cyan-400">KHTN 9 - Bài 7</span>
+                    </div>
+                    <h1 class="font-olympia text-lg md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                        LĂNG KÍNH TRI ÂN - OLYMPIA
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Bảng điểm 4 Đội / Học sinh (Có thể click cộng/trừ điểm trực tiếp) -->
+            <div id="scoreboard-bar" class="flex items-center gap-2 overflow-x-auto py-1">
+                <!-- Sẽ được render bằng JS -->
+            </div>
+
+            <!-- Các nút công cụ của Giáo viên -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSound()" id="sound-btn" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-600 transition" title="Bật/Tắt âm thanh">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="openTeacherModal()" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-md transition">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span class="hidden sm:inline">Sửa câu hỏi</span>
+                </button>
+                <button onclick="switchScreen('home')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs md:text-sm font-semibold border border-slate-600 transition">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Thanh dải màu quang phổ 7 màu trang trí -->
+        <div class="h-1 w-full prism-gradient"></div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 flex flex-col justify-center">
+
+        <!-- 1. MÀN HÌNH CHÍNH (HOME SCREEN) -->
+        <section id="screen-home" class="space-y-8 animate-fadeIn">
+            <!-- Hero Banner kết hợp Mô phỏng Lăng kính SVG -->
+            <div class="relative rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 p-6 md:p-8 shadow-2xl overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Cột trái: Thông điệp 20/11 & Giới thiệu -->
+                    <div class="lg:col-span-7 space-y-4 z-10">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-sm font-medium">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Chào mừng Ngày Nhà giáo Việt Nam 20/11</span>
+                        </div>
+                        <h2 class="font-olympia text-2xl sm:text-4xl font-black leading-tight text-white">
+                            THẦY CÔ LÀ <span class="bg-gradient-to-r from-red-400 via-yellow-300 to-purple-400 bg-clip-text text-transparent">LĂNG KÍNH DIỆU KỲ</span><br>
+                            GIÚP CHÚNG EM TỎA SÁNG!
+                        </h2>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Chào mừng các "Nhà leo núi" lớp 9! Giống như lăng kính phân tách chùm sáng trắng thành 7 sắc cầu vồng rực rỡ, thầy cô đã truyền ngọn lửa tri thức để mỗi học sinh khám phá sắc màu riêng của mình. Hãy chinh phục 4 vòng thi kiến thức <b>Bài 7: Lăng Kính</b> để dành tặng thầy cô những <b>Bông hoa Điểm 10</b> và <b>Vòng Nguyệt Quế</b> danh giá nhất!
+                        </p>
+                        <!-- Chọn đội đang thi đấu chính -->
+                        <div class="pt-2">
+                            <label class="block text-xs uppercase tracking-wider text-slate-400 font-bold mb-2">
+                                <i class="fa-solid fa-users-gear mr-1 text-amber-400"></i> Chọn Đội / Nhà leo núi đang ở lượt thi chính:
+                            </label>
+                            <div id="active-team-selector" class="flex flex-wrap gap-2">
+                                <!-- Render bằng JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải: Đồ họa SVG Lăng kính tán sắc tương tác -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-center bg-slate-950/70 rounded-2xl p-4 border border-slate-800 shadow-inner">
+                        <div class="text-xs font-semibold text-cyan-300 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-eye"></i> Mô phỏng trực quan: Tán sắc qua Lăng kính
+                        </div>
+                        <svg viewBox="0 0 400 220" class="w-full max-w-md h-auto overflow-visible">
+                            <!-- Nguồn sáng: Ngọn đuốc tri thức 20/11 -->
+                            <text x="12" y="125" fill="#fde047" font-size="11" font-weight="bold">Ánh sáng trắng</text>
+                            <text x="12" y="140" fill="#94a3b8" font-size="9">(Tri thức Thầy Cô)</text>
+                            
+                            <!-- Tia sáng trắng chiếu tới -->
+                            <line x1="20" y1="155" x2="155" y2="110" stroke="#ffffff" stroke-width="5" stroke-linecap="round" class="light-beam" />
+                            
+                            <!-- Tia khuếch tán trong lăng kính -->
+                            <polygon points="155,110 235,95 230,130" fill="url(#insidePrismGrad)" opacity="0.7" />
+
+                            <!-- 7 Tia ló đơn sắc lệch về phía đáy (Đỏ lệch ít nhất, Tím lệch nhiều nhất) -->
+                            <g class="light-beam">
+                                <line x1="235" y1="96" x2="380" y2="105" stroke="#ef4444" stroke-width="3.5" />
+                                <line x1="234" y1="101" x2="380" y2="118" stroke="#f97316" stroke-width="3.5" />
+                                <line x1="233" y1="106" x2="380" y2="131" stroke="#eab308" stroke-width="3.5" />
+                                <line x1="232" y1="112" x2="380" y2="144" stroke="#22c55e" stroke-width="3.5" />
+                                <line x1="231" y1="118" x2="380" y2="157" stroke="#3b82f6" stroke-width="3.5" />
+                                <line x1="230" y1="124" x2="380" y2="170" stroke="#6366f1" stroke-width="3.5" />
+                                <line x1="229" y1="130" x2="380" y2="183" stroke="#a855f7" stroke-width="3.5" />
+                            </g>
+
+                            <!-- Nhãn Đỏ - Tím -->
+                            <text x="345" y="98" fill="#fca5a5" font-size="10" font-weight="bold">Đỏ (Lệch ít nhất)</text>
+                            <text x="335" y="198" fill="#d8b4fe" font-size="10" font-weight="bold">Tím (Lệch nhiều nhất)</text>
+
+                            <!-- Khối Lăng kính Tam giác ABC -->
+                            <polygon points="195,30 125,175 265,175" fill="rgba(56, 189, 248, 0.18)" stroke="#38bdf8" stroke-width="3" stroke-linejoin="round" />
+                            <text x="190" y="22" fill="#38bdf8" font-size="12" font-weight="bold">A (Góc chiết quang)</text>
+                            <text x="110" y="192" fill="#38bdf8" font-size="11" font-weight="bold">B</text>
+                            <text x="265" y="192" fill="#38bdf8" font-size="11" font-weight="bold">C</text>
+                            <text x="172" y="192" fill="#7dd3fc" font-size="11">Đáy lăng kính</text>
+
+                            <defs>
+                                <linearGradient id="insidePrismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffffff" />
+                                    <stop offset="50%" stop-color="#fde047" />
+                                    <stop offset="100%" stop-color="#a855f7" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 THẺ VÒNG THI OLYMPIA -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Vòng 1: Khởi Động -->
+                <div onclick="startRound(1)" class="group cursor-pointer rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-rose-500/40 hover:border-rose-400 p-5 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-300 font-bold text-xs uppercase tracking-wider">Vòng 1</span>
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-olympia text-xl font-extrabold text-white mb-1">KHỞI ĐỘNG</h3>
+                        <p class="text-amber-300 text-xs font-semibold mb-2">Ánh Sáng Tri Thức</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Trong 60 giây, trả lời nhanh 6 câu hỏi trắc nghiệm nhận biết về cấu tạo lăng kính và tán sắc. Mỗi câu đúng +10 điểm & 1 Hoa Điểm 10!
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-rose-400 group-hover:text-rose-300">
+                        <span>BẮT ĐẦU NGAY</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Vòng 2: Vượt Chướng Ngại Vật -->
+                <div onclick="startRound(2)" class="group cursor-pointer rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-amber-500/40 hover:border-amber-400 p-5 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold text-xs uppercase tracking-wider">Vòng 2</span>
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-puzzle-piece"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-olympia text-xl font-extrabold text-white mb-1">VƯỢT CHƯỚNG NGẠI VẬT</h3>
+                        <p class="text-amber-300 text-xs font-semibold mb-2">Dải Sắc Màu 20/11</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Lật mở 4 mảnh ghép hàng ngang (+20đ/hàng) để hé lộ Bức tranh & Từ khóa trung tâm tri ân thầy cô (Đoán đúng sớm nhận tới +80đ).
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-amber-400 group-hover:text-amber-300">
+                        <span>GIẢI MÃ TỪ KHÓA</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Vòng 3: Tăng Tốc -->
+                <div onclick="startRound(3)" class="group cursor-pointer rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-emerald-500/40 hover:border-emerald-400 p-5 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold text-xs uppercase tracking-wider">Vòng 3</span>
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-olympia text-xl font-extrabold text-white mb-1">TĂNG TỐC</h3>
+                        <p class="text-amber-300 text-xs font-semibold mb-2">Thấu Kính & Sắc Màu</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Quan sát thí nghiệm trực quan về màu sắc bông hoa 20/11 dưới các ánh sáng màu và đường truyền tia sáng. Điểm thưởng theo tốc độ (+40đ)!
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-emerald-400 group-hover:text-emerald-300">
+                        <span>TĂNG TỐC NGAY</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Vòng 4: Về Đích -->
+                <div onclick="startRound(4)" class="group cursor-pointer rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-purple-500/40 hover:border-purple-400 p-5 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 font-bold text-xs uppercase tracking-wider">Vòng 4</span>
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-crown"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-olympia text-xl font-extrabold text-white mb-1">VỀ ĐÍCH</h3>
+                        <p class="text-amber-300 text-xs font-semibold mb-2">Vòng Nguyệt Quế Tri Ân</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Chinh phục các gói câu hỏi 20 - 30 điểm. Sử dụng <b>Ngôi Sao Hy Vọng</b> để nhân đôi số điểm và trao Vòng Nguyệt Quế tặng Thầy Cô!
+                        </p>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-purple-400 group-hover:text-purple-300">
+                        <span>CHINH PHỤC ĐỈNH CAO</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút Tổng kết & Trao Vòng Nguyệt Quế 20/11 -->
+            <div class="flex justify-center pt-2">
+                <button onclick="showVictoryScreen()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-olympia font-extrabold text-sm md:text-base shadow-lg shadow-amber-500/25 flex items-center gap-2.5 transition transform hover:scale-105">
+                    <i class="fa-solid fa-trophy text-lg"></i>
+                    <span>TỔNG KẾT TRAO VÒNG NGUYỆT QUẾ & THIỆP TRI ÂN 20/11</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== 2. VÒNG 1: KHỞI ĐỘNG ==================== -->
+        <section id="screen-round1" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 p-4 rounded-2xl border border-rose-500/30">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1.5 rounded-xl bg-rose-500 text-white font-olympia font-bold text-sm">VÒNG 1: KHỞI ĐỘNG</span>
+                    <span id="r1-active-team-badge" class="text-sm font-semibold text-amber-300"></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-flower-daffodil text-rose-400"></i>
+                        <span class="text-sm text-slate-300">Câu hỏi: <b id="r1-q-index" class="text-white">1/6</b></span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-xl border border-rose-500/40">
+                        <i class="fa-solid fa-stopwatch text-rose-400 animate-spin" style="animation-duration: 4s;"></i>
+                        <span id="r1-timer" class="font-olympia text-xl font-black text-rose-400">60s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh tiến trình thời gian -->
+            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                <div id="r1-progress" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-1000" style="width: 100%;"></div>
+            </div>
+
+            <!-- Khung câu hỏi Khởi động -->
+            <div class="bg-slate-900/95 border border-slate-700 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                <div class="min-h-[90px] flex items-center justify-center text-center">
+                    <h3 id="r1-question-text" class="text-lg md:text-2xl font-bold text-white leading-relaxed">
+                        Đang tải câu hỏi...
+                    </h3>
+                </div>
+
+                <!-- 4 Đáp án A, B, C, D -->
+                <div id="r1-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Render bằng JS -->
+                </div>
+
+                <!-- Phản hồi giải thích nhanh -->
+                <div id="r1-feedback" class="hidden p-4 rounded-2xl text-sm font-medium flex items-center justify-between"></div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT ==================== -->
+        <section id="screen-round2" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 p-4 rounded-2xl border border-amber-500/30">
+                <div>
+                    <span class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-olympia font-bold text-sm">VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT</span>
+                    <span class="ml-2 text-xs sm:text-sm text-slate-300">Mỗi hàng ngang đúng <b>+20 điểm</b>. Giải đúng Từ khóa trung tâm nhận tới <b>+80 điểm</b>!</span>
+                </div>
+                <button onclick="openKeywordModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-olympia font-extrabold text-xs sm:text-sm shadow-lg flex items-center gap-2 animate-bounce">
+                    <i class="fa-solid fa-bell"></i> BẤM CHUÔNG GIẢI TỪ KHÓA
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- Cột trái: 4 Hàng ngang gợi ý -->
+                <div class="lg:col-span-7 space-y-3 bg-slate-900/90 p-5 rounded-3xl border border-slate-700">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-bars-staggered"></i> 4 Hàng Ngang Gợi Ý (Click chọn hàng để mở câu hỏi)
+                    </h4>
+                    <div id="r2-rows-container" class="space-y-3">
+                        <!-- Render bằng JS -->
+                    </div>
+
+                    <!-- Khung trả lời hàng ngang đang chọn -->
+                    <div id="r2-active-question-box" class="hidden mt-5 pt-5 border-t border-slate-700 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span id="r2-current-row-label" class="text-xs font-bold uppercase px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300">Hàng ngang 1</span>
+                            <span id="r2-row-timer" class="font-olympia font-bold text-amber-400 text-lg">15s</span>
+                        </div>
+                        <p id="r2-question-text" class="text-base md:text-lg font-semibold text-white"></p>
+                        <div class="flex gap-2">
+                            <input type="text" id="r2-answer-input" placeholder="Nhập đáp án hàng ngang (không dấu hoặc có dấu)..." class="flex-grow px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-600 text-white focus:outline-none focus:border-amber-400 uppercase font-bold" onkeydown="if(event.key==='Enter') submitR2RowAnswer()">
+                            <button onclick="submitR2RowAnswer()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition">
+                                Trả lời
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Hình ảnh Chướng ngại vật bị che bởi 4 mảnh ghép -->
+                <div class="lg:col-span-5 bg-slate-900/90 p-5 rounded-3xl border border-slate-700 flex flex-col items-center">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+                        <i class="fa-solid fa-image mr-1"></i> Bức Tranh Bí Ẩn Ngày 20/11
+                    </h4>
+                    <div class="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-inner bg-slate-950 flex items-center justify-center">
+                        <!-- Bức tranh gốc bên dưới (Vẽ bằng SVG + Thông điệp) -->
+                        <div class="p-4 text-center space-y-2">
+                            <svg viewBox="0 0 300 130" class="w-56 mx-auto">
+                                <polygon points="150,15 100,115 200,115" fill="rgba(56,189,248,0.25)" stroke="#38bdf8" stroke-width="3"/>
+                                <line x1="20" y1="90" x2="122" y2="68" stroke="#fff" stroke-width="4"/>
+                                <line x1="175" y1="60" x2="280" y2="55" stroke="#ef4444" stroke-width="3"/>
+                                <line x1="178" y1="67" x2="280" y2="70" stroke="#eab308" stroke-width="3"/>
+                                <line x1="181" y1="74" x2="280" y2="85" stroke="#22c55e" stroke-width="3"/>
+                                <line x1="184" y1="81" x2="280" y2="100" stroke="#3b82f6" stroke-width="3"/>
+                                <line x1="187" y1="88" x2="280" y2="115" stroke="#a855f7" stroke-width="3"/>
+                            </svg>
+                            <div class="font-olympia font-black text-base text-amber-300 tracking-wide">TÁN SẮC ÁNH SÁNG</div>
+                            <p class="text-xs text-slate-300">"Thầy cô như lăng kính giúp mỗi học sinh tỏa sáng sắc màu riêng!"</p>
+                        </div>
+
+                        <!-- 4 Mảnh ghép che phủ -->
+                        <div id="r2-covers-grid" class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div id="r2-cover-0" class="bg-gradient-to-br from-rose-600 to-orange-600 border border-slate-900 flex items-center justify-center font-olympia font-black text-2xl text-white transition-all duration-700">1</div>
+                            <div id="r2-cover-1" class="bg-gradient-to-br from-amber-500 to-yellow-600 border border-slate-900 flex items-center justify-center font-olympia font-black text-2xl text-white transition-all duration-700">2</div>
+                            <div id="r2-cover-2" class="bg-gradient-to-br from-emerald-600 to-teal-700 border border-slate-900 flex items-center justify-center font-olympia font-black text-2xl text-white transition-all duration-700">3</div>
+                            <div id="r2-cover-3" class="bg-gradient-to-br from-indigo-600 to-purple-700 border border-slate-900 flex items-center justify-center font-olympia font-black text-2xl text-white transition-all duration-700">4</div>
+                        </div>
+                    </div>
+
+                    <div id="r2-keyword-status" class="mt-4 text-center text-sm text-slate-300">
+                        Từ khóa trung tâm gồm <b class="text-amber-300">14 chữ cái</b> (Tính cả dấu cách: <b>TÁN SẮC ÁNH SÁNG</b>)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 4. VÒNG 3: TĂNG TỐC ==================== -->
+        <section id="screen-round3" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 p-4 rounded-2xl border border-emerald-500/30">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-olympia font-bold text-sm">VÒNG 3: TĂNG TỐC</span>
+                    <span class="text-xs sm:text-sm text-slate-300">Quan sát hình ảnh thí nghiệm & chọn nhanh đáp án đúng (+40, +30, +20 điểm)</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-300">Tình huống: <b id="r3-q-index" class="text-white">1/4</b></span>
+                    <div class="px-4 py-1.5 rounded-xl bg-slate-950 border border-emerald-500/40 font-olympia font-black text-xl text-emerald-400" id="r3-timer">20s</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-900/95 border border-slate-700 rounded-3xl p-6 shadow-2xl">
+                <!-- Cột Minh họa Thí nghiệm SVG -->
+                <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-4 border border-slate-800 flex flex-col items-center justify-center min-h-[240px]" id="r3-visual-box">
+                    <!-- Render hình vẽ thí nghiệm bằng JS -->
+                </div>
+
+                <!-- Cột Câu hỏi & Đáp án -->
+                <div class="lg:col-span-7 space-y-5">
+                    <h3 id="r3-question-text" class="text-lg md:text-xl font-bold text-white leading-relaxed"></h3>
+                    <div id="r3-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+                    <div id="r3-feedback" class="hidden p-4 rounded-2xl text-sm font-medium"></div>
+                    <div class="flex justify-end">
+                        <button id="r3-next-btn" onclick="nextR3Question()" class="hidden px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition">
+                            Tình huống tiếp theo <i class="fa-solid fa-forward ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 5. VÒNG 4: VỀ ĐÍCH ==================== -->
+        <section id="screen-round4" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 p-4 rounded-2xl border border-purple-500/30">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1.5 rounded-xl bg-purple-600 text-white font-olympia font-bold text-sm">VÒNG 4: VỀ ĐÍCH</span>
+                    <span class="text-xs sm:text-sm text-slate-300">Chọn gói câu hỏi & Ngôi Sao Hy Vọng (Đúng x2 điểm, Sai trừ điểm câu hỏi)</span>
+                </div>
+                <button onclick="toggleHopeStar()" id="r4-star-btn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold text-xs sm:text-sm flex items-center gap-2 transition">
+                    <i id="r4-star-icon" class="fa-solid fa-star text-amber-400 text-lg"></i>
+                    <span id="r4-star-text">ĐẶT NGÔI SAO HY VỌNG (Đang tắt)</span>
+                </button>
+            </div>
+
+            <!-- Danh sách 3 câu hỏi Về Đích (20 - 20 - 30 điểm) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="r4-pack-selector">
+                <!-- Render bằng JS -->
+            </div>
+
+            <!-- Khung hiển thị câu hỏi Về đích đang mở -->
+            <div id="r4-question-area" class="hidden bg-slate-900/95 border border-purple-500/40 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <span id="r4-q-badge" class="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 font-bold text-sm">Gói 20 điểm</span>
+                        <span id="r4-star-active-badge" class="hidden px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold text-xs border border-amber-400/40">
+                            <i class="fa-solid fa-star mr-1"></i> Đang dùng Ngôi Sao Hy Vọng (x2 điểm)
+                        </span>
+                    </div>
+                    <div id="r4-timer" class="font-olympia font-black text-2xl text-purple-400">20s</div>
+                </div>
+
+                <h3 id="r4-question-text" class="text-lg md:text-2xl font-bold text-white leading-relaxed"></h3>
+
+                <div id="r4-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+                <!-- Khu vực dành cho Giáo viên/Các đội khác giành quyền trả lời nếu đội chính trả lời sai -->
+                <div id="r4-steal-box" class="hidden p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-3">
+                    <p class="text-sm text-amber-300 font-semibold">
+                        <i class="fa-solid fa-bell mr-1"></i> Đội chính trả lời chưa chính xác! Mời các đội khác bấm chuông giành quyền trả lời (+điểm câu hỏi):
+                    </p>
+                    <div id="r4-steal-teams" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div id="r4-feedback" class="hidden p-4 rounded-2xl text-sm font-medium"></div>
+            </div>
+        </section>
+
+        <!-- ==================== 6. MÀN HÌNH VINH DANH & TRI ÂN 20/11 ==================== -->
+        <section id="screen-victory" class="hidden space-y-6 text-center">
+            <div class="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 border-2 border-amber-400/60 rounded-3xl p-6 md:p-10 shadow-2xl max-w-4xl mx-auto space-y-6">
+                <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-300 via-yellow-500 to-orange-500 flex items-center justify-center shadow-xl shadow-amber-500/30">
+                    <i class="fa-solid fa-crown text-4xl text-slate-950"></i>
+                </div>
+                <div class="space-y-2">
+                    <span class="px-4 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-xs font-bold uppercase tracking-widest">
+                        Lễ Vinh Danh & Tri Ân 20/11
+                    </span>
+                    <h2 class="font-olympia text-2xl md:text-4xl font-black text-white">
+                        BẢNG VÀNG ĐƯỜNG LÊN ĐỈNH OLYMPIA
+                    </h2>
+                </div>
+
+                <!-- Bục trao giải -->
+                <div id="victory-podium" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                    <!-- Render bằng JS -->
+                </div>
+
+                <!-- Tấm thiệp Tri ân 20/11 gắn với bài học Lăng kính -->
+                <div class="p-6 rounded-2xl bg-slate-950/90 border border-amber-400/30 text-left space-y-3 relative overflow-hidden">
+                    <div class="h-1.5 w-full prism-gradient absolute top-0 left-0"></div>
+                    <h3 class="font-olympia text-lg font-bold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-heart text-rose-500"></i> Thông Điệp "Lăng Kính Tri Ân" Gửi Thầy Cô Ngày 20/11:
+                    </h3>
+                    <p class="text-slate-200 text-sm md:text-base italic leading-relaxed">
+                        "Kính thưa Thầy Cô! Qua Bài 7: Lăng kính, chúng em hiểu rằng ánh sáng trắng khi đi qua lăng kính sẽ tỏa ra 7 sắc màu cầu vồng rực rỡ. Thầy cô chính là lăng kính diệu kỳ nhất của cuộc đời, luôn kiên nhẫn khúc xạ và đánh thức những tiềm năng ẩn giấu bên trong mỗi chúng em. Nhân ngày Nhà giáo Việt Nam 20/11, chúng em xin kính tặng Thầy Cô Vòng Nguyệt Quế của lòng biết ơn và những Bông hoa Điểm 10 tươi thắm nhất!"
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 pt-2">
+                    <button onclick="fireCelebrationConfetti()" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm flex items-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Bắn Pháo Hoa Chúc Mừng
+                    </button>
+                    <button onclick="resetAllScores()" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-600">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Chơi Lại Từ Đầu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODAL 1: GIẢI TỪ KHÓA CHƯỚNG NGẠI VẬT (VÒNG 2) ==================== -->
+    <div id="keyword-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-amber-400 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-olympia text-xl font-extrabold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-bell"></i> GIẢI MÃ TỪ KHÓA TRUNG TÂM
+                </h3>
+                <button onclick="closeKeywordModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <p class="text-sm text-slate-300">
+                Hiện tượng lăng kính tách chùm ánh sáng trắng thành các chùm sáng màu khác nhau gọi là hiện tượng gì?
+            </p>
+            <input type="text" id="keyword-input" placeholder="Nhập từ khóa trung tâm (VD: TAN SAC ANH SANG)..." class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-amber-400/60 text-white font-bold uppercase focus:outline-none">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeKeywordModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Hủy</button>
+                <button onclick="submitKeywordGuess()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-olympia font-bold text-sm">Xác nhận đáp án</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: TRÌNH SỬA CÂU HỎI CHO GIÁO VIÊN ==================== -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-5 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+                <div>
+                    <h3 class="font-olympia text-lg font-bold text-indigo-400 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> CÀI ĐẶT ĐỘI THI & CHỈNH SỬA NGÂN HÀNG CÂU HỎI
+                    </h3>
+                    <p class="text-xs text-slate-400">Giáo viên có thể đổi tên 4 đội/học sinh hoặc sửa nội dung câu hỏi trực tiếp dưới dạng JSON rất dễ dàng.</p>
+                </div>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+                <!-- Đổi tên 4 Đội thi -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-amber-400 mb-2">1. Tên 4 Đội / Nhà leo núi:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3" id="teacher-team-names">
+                        <!-- Render bằng JS -->
+                    </div>
+                </div>
+
+                <!-- Sửa JSON Ngân hàng câu hỏi -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold uppercase text-cyan-400">2. Dữ liệu Câu hỏi các vòng (Định dạng JSON):</label>
+                        <button onclick="resetDefaultQuestions()" class="text-xs text-rose-400 hover:underline">Khôi phục câu hỏi mặc định</button>
+                    </div>
+                    <textarea id="teacher-json-editor" rows="12" class="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 font-mono text-xs text-emerald-300 focus:outline-none focus:border-indigo-400"></textarea>
+                    <p id="teacher-save-msg" class="text-xs text-emerald-400 mt-2 hidden"></p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex justify-end gap-3">
+                <button onclick="closeTeacherModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Đóng</button>
+                <button onclick="saveTeacherChanges()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-slate-950/80 border-t border-slate-800/80 py-3 px-4 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span><i class="fa-solid fa-graduation-cap text-amber-400 mr-1"></i> Học liệu số tương tác: <b>Bài 7. Lăng Kính - KHTN 9</b></span>
+            <span>Chủ đề: <b>Đường Lên Đỉnh Olympia - Tri Ân Thầy Cô 20/11</b></span>
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT: LOGIC TRÒ CHƠI & NGÂN HÀNG CÂU HỎI ==================== -->
+    <script>
+        /* =========================================================================
+           PHẦN 1: NGÂN HÀNG CÂU HỎI MẶC ĐỊNH (DỄ DÀNG CHỈNH SỬA CHO GIÁO VIÊN)
+           ========================================================================= */
+        const DEFAULT_GAME_DATA = {
+            // VÒNG 1: KHỞI ĐỘNG (6 câu hỏi trắc nghiệm nhanh)
+            round1: [
+                {
+                    q: "Câu 1: Lăng kính là một khối chất trong suốt, đồng chất, thường có dạng hình học nào sau đây?",
+                    options: ["A. Hình cầu", "B. Hình trụ tròn", "C. Lăng trụ tam giác", "D. Hình lập phương"],
+                    correct: 2,
+                    explain: "Chính xác! Lăng kính thường có dạng lăng trụ tam giác gồm cạnh, đáy và hai mặt bên."
+                },
+                {
+                    q: "Câu 2: Khi chiếu chùm ánh sáng trắng hẹp qua lăng kính, dải màu thu được có bao nhiêu màu chính (như sắc hoa ngày 20/11)?",
+                    options: ["A. 5 màu", "B. 6 màu", "C. 7 màu (Đỏ, Cam, Vàng, Lục, Lam, Chàm, Tím)", "D. 8 màu"],
+                    correct: 2,
+                    explain: "Tuyệt vời! Dải màu biến thiên liên tục gồm 7 màu chính của cầu vồng."
+                },
+                {
+                    q: "Câu 3: Trong dải màu tán sắc qua lăng kính, tia sáng màu nào bị lệch ÍT NHẤT về phía đáy lăng kính?",
+                    options: ["A. Tia màu Đỏ", "B. Tia màu Vàng", "C. Tia màu Lục", "D. Tia màu Tím"],
+                    correct: 0,
+                    explain: "Đúng rồi! Tia màu đỏ có chiết suất nhỏ nhất nên bị lệch ít nhất về phía đáy."
+                },
+                {
+                    q: "Câu 4: Trong dải màu tán sắc qua lăng kính, tia sáng màu nào bị lệch NHIỀU NHẤT về phía đáy lăng kính?",
+                    options: ["A. Tia màu Đỏ", "B. Tia màu Cam", "C. Tia màu Lam", "D. Tia màu Tím"],
+                    correct: 3,
+                    explain: "Chính xác! Tia màu tím bị lệch nhiều nhất về phía đáy của lăng kính."
+                },
+                {
+                    q: "Câu 5: Vật có màu nào dưới đây tán xạ tốt tất cả các ánh sáng màu chiếu tới nó (giống như viên phấn trắng của thầy cô)?",
+                    options: ["A. Vật màu đen", "B. Vật màu trắng", "C. Vật màu đỏ", "D. Vật màu lục"],
+                    correct: 1,
+                    explain: "Chính xác! Vật màu trắng tán xạ tốt tất cả các ánh sáng màu chiếu tới."
+                },
+                {
+                    q: "Câu 6: Khi một chùm tia sáng đơn sắc truyền qua lăng kính thì tia ló ra khỏi lăng kính có đặc điểm gì?",
+                    options: [
+                        "A. Bị tách thành 7 màu khác nhau",
+                        "B. Truyền thẳng không bị đổi hướng",
+                        "C. Không bị đổi màu và luôn lệch về phía đáy lăng kính",
+                        "D. Không bị đổi màu và lệch về phía đỉnh góc chiết quang"
+                    ],
+                    correct: 2,
+                    explain: "Xuất sắc! Ánh sáng đơn sắc qua lăng kính không bị tán sắc (không đổi màu), chỉ bị lệch về phía đáy."
+                }
+            ],
+
+            // VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT (4 hàng ngang + 1 Từ khóa trung tâm)
+            round2: {
+                keyword: "TAN SAC ANH SANG",
+                keywordDisplay: "TÁN SẮC ÁNH SÁNG",
+                rows: [
+                    {
+                        label: "Hàng ngang 1 (3 chữ cái)",
+                        q: "Mặt đối diện với cạnh góc chiết quang của lăng kính được gọi là mặt gì? (Tia sáng qua lăng kính luôn bị lệch về phía mặt này)",
+                        ans: "DAY",
+                        displayAns: "ĐÁY"
+                    },
+                    {
+                        label: "Hàng ngang 2 (6 chữ cái)",
+                        q: "Ánh sáng chỉ có một màu nhất định và không bị đổi màu khi đi qua lăng kính được gọi là ánh sáng gì?",
+                        ans: "DON SAC",
+                        displayAns: "ĐƠN SẮC"
+                    },
+                    {
+                        label: "Hàng ngang 3 (6 chữ cái)",
+                        q: "Hiện tượng tia sáng bị gãy khúc (đổi hướng) khi truyền qua mặt phân cách tại hai mặt bên của lăng kính gọi là hiện tượng gì?",
+                        ans: "KHUC XA",
+                        displayAns: "KHÚC XẠ"
+                    },
+                    {
+                        label: "Hàng ngang 4 (6 chữ cái)",
+                        q: "Vật có màu đen vì nó đã làm gì đối với hầu hết tất cả các ánh sáng màu chiếu tới nó?",
+                        ans: "HAP THU",
+                        displayAns: "HẤP THỤ"
+                    }
+                ]
+            },
+
+            // VÒNG 3: TĂNG TỐC (4 câu hỏi tình huống & hình ảnh thí nghiệm)
+            round3: [
+                {
+                    q: "Tình huống 1: Nhân ngày 20/11, bạn Lan tặng cô giáo một bông hoa hồng nhung màu đỏ dưới ánh nắng mặt trời (ánh sáng trắng). Vì sao mắt ta nhìn thấy cánh hoa có màu đỏ?",
+                    visualType: "rose_white_light",
+                    options: [
+                        "A. Vì cánh hoa tự phát ra ánh sáng màu đỏ",
+                        "B. Vì cánh hoa màu đỏ tán xạ mạnh ánh sáng đỏ và hấp thụ các ánh sáng màu khác",
+                        "C. Vì cánh hoa hấp thụ ánh sáng màu đỏ",
+                        "D. Vì ánh sáng trắng chỉ có màu đỏ"
+                    ],
+                    correct: 1,
+                    explain: "Đúng! Vật màu nào thì tán xạ mạnh ánh sáng màu đó và hấp thụ các màu còn lại."
+                },
+                {
+                    q: "Tình huống 2: Nếu đưa bông hoa hồng màu đỏ đó vào trong phòng tối và chỉ chiếu ánh sáng đơn sắc MÀU LỤC vào bông hoa, ta sẽ thấy cánh hoa hồng có màu gì?",
+                    visualType: "rose_green_light",
+                    options: [
+                        "A. Vẫn có màu đỏ rực rỡ",
+                        "B. Chuyển sang màu lục",
+                        "C. Có màu đen (hoặc tối sẫm)",
+                        "D. Chuyển sang màu vàng"
+                    ],
+                    correct: 2,
+                    explain: "Chính xác! Cánh hoa màu đỏ hấp thụ ánh sáng màu lục nên không có ánh sáng tán xạ tới mắt -> Ta thấy cánh hoa màu đen."
+                },
+                {
+                    q: "Tình huống 3: Quan sát hình vẽ lăng kính ABC có đỉnh A ở trên, đáy BC ở dưới. Khi chiếu tia sáng đơn sắc màu vàng tới mặt bên AB, tia ló ra khỏi mặt AC sẽ đi theo hướng nào?",
+                    visualType: "prism_ray_direction",
+                    options: [
+                        "A. Đi thẳng theo phương ban đầu (Tia 1)",
+                        "B. Bị lệch bẻ gập lên phía đỉnh A (Tia 2)",
+                        "C. Bị lệch chếch xuống về phía đáy BC (Tia 3)",
+                        "D. Phản xạ ngược lại hoàn toàn"
+                    ],
+                    correct: 2,
+                    explain: "Tuyệt vời! Tia sáng khi truyền qua lăng kính luôn bị lệch về phía đáy (Tia 3)."
+                },
+                {
+                    q: "Tình huống 4: Chiếu ánh sáng trắng qua một tấm kính lọc màu tím vào trang vở trắng có điểm 10 tặng thầy cô. Ta sẽ nhìn thấy trang vở có màu gì?",
+                    visualType: "filter_purple",
+                    options: [
+                        "A. Màu trắng",
+                        "B. Màu tím",
+                        "C. Màu đen",
+                        "D. Màu đỏ"
+                    ],
+                    correct: 1,
+                    explain: "Chính xác! Kính lọc màu tím chỉ cho ánh sáng tím đi qua, còn trang giấy trắng tán xạ tốt ánh sáng tím đó tới mắt ta."
+                }
+            ],
+
+            // VÒNG 4: VỀ ĐÍCH (3 câu hỏi Vận dụng 20 - 20 - 30 điểm)
+            round4: [
+                {
+                    points: 20,
+                    title: "Gói câu hỏi 20 điểm (Thực tế tự nhiên)",
+                    q: "Sau cơn mưa rào, khi Mặt Trời chiếu sáng, ta thường thấy cầu vồng 7 sắc rực rỡ trên bầu trời. Trong hiện tượng này, vật nào đóng vai trò như hàng triệu 'lăng kính tí hon'?",
+                    options: [
+                        "A. Các đám mây màu đen",
+                        "B. Các hạt bụi khô trong không khí",
+                        "C. Các giọt nước mưa lơ lửng trong không khí",
+                        "D. Khí quyển Trái Đất"
+                    ],
+                    correct: 2,
+                    explain: "Chính xác! Mỗi giọt nước mưa đóng vai trò như một lăng kính tí hon phân tách ánh sáng trắng của Mặt Trời thành dải màu cầu vồng."
+                },
+                {
+                    points: 20,
+                    title: "Gói câu hỏi 20 điểm (Sân khấu văn nghệ 20/11)",
+                    q: "Trong tiết mục múa tri ân thầy cô ngày 20/11, các bạn nữ mặc áo dài trắng. Để tà áo dài chuyển sang màu lam rồi màu vàng rực rỡ mà không cần thay áo, người chỉnh đèn sân khấu cần làm gì?",
+                    options: [
+                        "A. Tắt hết đèn sân khấu",
+                        "B. Chiếu lần lượt đèn ánh sáng màu lam rồi màu vàng vào tà áo dài trắng",
+                        "C. Chỉ chiếu đèn ánh sáng trắng",
+                        "D. Chiếu đèn tia hồng ngoại"
+                    ],
+                    correct: 1,
+                    explain: "Xuất sắc! Vì áo dài màu trắng tán xạ tốt mọi ánh sáng màu chiếu tới nó."
+                },
+                {
+                    points: 30,
+                    title: "Gói câu hỏi 30 điểm (Vận dụng cao)",
+                    q: "Chiếu một chùm sáng hẹp gồm hai tia đơn sắc màu VÀNG và màu LAM trùng nhau tới mặt bên của lăng kính. Khi ló ra khỏi lăng kính, hai tia này như thế nào?",
+                    options: [
+                        "A. Vẫn trùng khít lên nhau và có màu lục",
+                        "B. Tách rời nhau ra, tia màu vàng nằm gần đáy lăng kính hơn",
+                        "C. Tách rời nhau ra, tia màu lam bị lệch nhiều hơn nên nằm gần đáy lăng kính hơn",
+                        "D. Cả hai tia đều bị lệch về phía đỉnh A của lăng kính"
+                    ],
+                    correct: 2,
+                    explain: "Quá đỉnh! Theo thứ tự Đỏ - Cam - Vàng - Lục - Lam - Chàm - Tím, tia Lam lệch nhiều hơn tia Vàng nên nằm gần đáy hơn."
+                }
+            ]
+        };
+
+        /* =========================================================================
+           PHẦN 2: QUẢN LÝ TRẠNG THÁI TRÒ CHƠI & ÂM THANH (WEB AUDIO API)
+           ========================================================================= */
+        let GAME_DATA = JSON.parse(JSON.stringify(DEFAULT_GAME_DATA));
+
+        let teams = [
+            { id: 0, name: "Tổ 1 - Tia Đỏ", score: 0, flowers: 0 },
+            { id: 1, name: "Tổ 2 - Tia Vàng", score: 0, flowers: 0 },
+            { id: 2, name: "Tổ 3 - Tia Lục", score: 0, flowers: 0 },
+            { id: 3, name: "Tổ 4 - Tia Tím", score: 0, flowers: 0 }
+        ];
+        let activeTeamIndex = 0;
+        let soundEnabled = true;
+        let activeTimer = null;
+
+        // Khởi tạo Web Audio API để phát âm thanh không cần file ngoài
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playTone(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    // Âm thanh Ting-Ting chiến thắng
+                    [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.25);
+                    });
+                } else if (type === 'wrong') {
+                    // Âm thanh Bíp trầm khi sai
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(120, now + 0.35);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'tick') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'bell') {
+                    // Tiếng chuông bấm giành quyền trả lời
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                }
+            } catch (e) {
+                console.warn("Audio warning:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark text-slate-400"></i>';
+        }
+
+        /* =========================================================================
+           PHẦN 3: HIỂN THỊ BẢNG ĐIỂM & CHUYỂN MÀN HÌNH
+           ========================================================================= */
+        function renderScoreboard() {
+            const bar = document.getElementById('scoreboard-bar');
+            const selector = document.getElementById('active-team-selector');
+
+            bar.innerHTML = teams.map((t, idx) => `
+                <div onclick="setActiveTeam(${idx})" class="cursor-pointer px-3 py-1.5 rounded-xl border transition flex items-center gap-2.5 ${idx === activeTeamIndex ? 'bg-amber-500/20 border-amber-400 shadow-sm shadow-amber-400/20' : 'bg-slate-800/80 border-slate-700 hover:border-slate-500'}">
+                    <div class="text-left">
+                        <div class="text-[11px] font-bold ${idx === activeTeamIndex ? 'text-amber-300' : 'text-slate-300'} flex items-center gap-1">
+                            ${idx === activeTeamIndex ? '<i class="fa-solid fa-caret-right text-amber-400"></i>' : ''}
+                            <span>${t.name}</span>
+                        </div>
+                        <div class="font-olympia text-sm font-black text-white flex items-center gap-1.5">
+                            <span>${t.score}đ</span>
+                            <span class="text-[10px] font-normal text-rose-300" title="Hoa điểm 10">🌸${t.flowers}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <button onclick="event.stopPropagation(); adjustScore(${idx}, 10)" class="text-[10px] px-1.5 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 rounded" title="Cộng 10đ">+</button>
+                        <button onclick="event.stopPropagation(); adjustScore(${idx}, -10)" class="text-[10px] px-1.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 rounded" title="Trừ 10đ">-</button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (selector) {
+                selector.innerHTML = teams.map((t, idx) => `
+                    <button onclick="setActiveTeam(${idx})" class="px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 ${idx === activeTeamIndex ? 'bg-amber-400 text-slate-950 shadow-lg' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'}">
+                        <i class="fa-solid fa-user-astronaut"></i> ${t.name} (${t.score}đ)
+                    </button>
+                `).join('');
+            }
+        }
+
+        function setActiveTeam(idx) {
+            activeTeamIndex = idx;
+            renderScoreboard();
+        }
+
+        function adjustScore(idx, delta, addFlower = false) {
+            teams[idx].score += delta;
+            if (addFlower) teams[idx].flowers += 1;
+            renderScoreboard();
+        }
+
+        function clearCurrentTimer() {
+            if (activeTimer) {
+                clearInterval(activeTimer);
+                activeTimer = null;
+            }
+        }
+
+        function switchScreen(screenName) {
+            clearCurrentTimer();
+            ['home', 'round1', 'round2', 'round3', 'round4', 'victory'].forEach(s => {
+                document.getElementById(`screen-${s}`).classList.add('hidden');
+            });
+            document.getElementById(`screen-${screenName}`).classList.remove('hidden');
+            renderScoreboard();
+        }
+
+        function startRound(roundNum) {
+            playTone('bell');
+            if (roundNum === 1) initRound1();
+            if (roundNum === 2) initRound2();
+            if (roundNum === 3) initRound3();
+            if (roundNum === 4) initRound4();
+        }
+
+        /* =========================================================================
+           PHẦN 4: LOGIC VÒNG 1 - KHỞI ĐỘNG (60 GIÂY)
+           ========================================================================= */
+        let r1Index = 0;
+        let r1TimeLeft = 60;
+        let r1Locked = false;
+
+        function initRound1() {
+            switchScreen('round1');
+            r1Index = 0;
+            r1TimeLeft = 60;
+            r1Locked = false;
+            document.getElementById('r1-active-team-badge').innerText = `Đang thi: ${teams[activeTeamIndex].name}`;
+            renderR1Question();
+
+            activeTimer = setInterval(() => {
+                r1TimeLeft--;
+                document.getElementById('r1-timer').innerText = `${r1TimeLeft}s`;
+                document.getElementById('r1-progress').style.width = `${(r1TimeLeft / 60) * 100}%`;
+                if (r1TimeLeft <= 10 && r1TimeLeft > 0) playTone('tick');
+                if (r1TimeLeft <= 0) {
+                    clearCurrentTimer();
+                    finishRound1("Hết thời gian 60 giây Khởi Động!");
+                }
+            }, 1000);
+        }
+
+        function renderR1Question() {
+            const list = GAME_DATA.round1;
+            if (r1Index >= list.length) {
+                clearCurrentTimer();
+                finishRound1("Đã hoàn thành toàn bộ gói câu hỏi Khởi Động!");
+                return;
+            }
+            r1Locked = false;
+            const item = list[r1Index];
+            document.getElementById('r1-q-index').innerText = `${r1Index + 1}/${list.length}`;
+            document.getElementById('r1-question-text').innerText = item.q;
+            document.getElementById('r1-feedback').classList.add('hidden');
+
+            document.getElementById('r1-options').innerHTML = item.options.map((opt, idx) => `
+                <button onclick="answerR1(${idx})" id="r1-opt-${idx}" class="p-4 rounded-2xl bg-slate-800 hover:bg-indigo-600/40 border border-slate-600 hover:border-indigo-400 text-left font-semibold text-sm md:text-base text-slate-100 transition flex items-center justify-between">
+                    <span>${opt}</span>
+                </button>
+            `).join('');
+        }
+
+        function answerR1(choiceIdx) {
+            if (r1Locked) return;
+            r1Locked = true;
+            const item = GAME_DATA.round1[r1Index];
+            const fb = document.getElementById('r1-feedback');
+            fb.classList.remove('hidden');
+
+            const chosenBtn = document.getElementById(`r1-opt-${choiceIdx}`);
+            const correctBtn = document.getElementById(`r1-opt-${item.correct}`);
+
+            if (choiceIdx === item.correct) {
+                playTone('correct');
+                chosenBtn.className = "p-4 rounded-2xl bg-emerald-600 border-2 border-emerald-300 text-left font-bold text-white flex items-center justify-between";
+                adjustScore(activeTeamIndex, 10, true);
+                fb.className = "p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 text-sm font-medium flex items-center justify-between";
+                fb.innerHTML = `<span><i class="fa-solid fa-circle-check mr-2"></i><b>+10 điểm & 1 Hoa Điểm 10!</b> ${item.explain}</span>`;
+            } else {
+                playTone('wrong');
+                chosenBtn.className = "p-4 rounded-2xl bg-rose-600 border-2 border-rose-300 text-left font-bold text-white flex items-center justify-between";
+                if (correctBtn) correctBtn.className = "p-4 rounded-2xl bg-emerald-600/80 border-2 border-emerald-300 text-left font-bold text-white flex items-center justify-between";
+                fb.className = "p-4 rounded-2xl bg-rose-500/20 border border-rose-400 text-rose-200 text-sm font-medium flex items-center justify-between";
+                fb.innerHTML = `<span><i class="fa-solid fa-circle-xmark mr-2"></i><b>Chưa chính xác!</b> ${item.explain}</span>`;
+            }
+
+            setTimeout(() => {
+                r1Index++;
+                renderR1Question();
+            }, 2200);
+        }
+
+        function finishRound1(msg) {
+            document.getElementById('r1-question-text').innerHTML = `🎉 ${msg}<br><span class="text-base text-amber-300 font-normal">Đội <b>${teams[activeTeamIndex].name}</b> hiện có <b>${teams[activeTeamIndex].score} điểm</b>.</span>`;
+            document.getElementById('r1-options').innerHTML = `
+                <button onclick="initRound1()" class="p-4 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-white text-center">Chơi lại Vòng 1 (Cho Đội tiếp theo)</button>
+                <button onclick="startRound(2)" class="p-4 rounded-2xl bg-amber-500 hover:bg-amber-400 font-bold text-slate-950 text-center">Sang Vòng 2: Vượt Chướng Ngại Vật <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            `;
+        }
+
+        /* =========================================================================
+           PHẦN 5: LOGIC VÒNG 2 - VƯỢT CHƯỚNG NGẠI VẬT
+           ========================================================================= */
+        let r2SolvedRows = [false, false, false, false];
+        let r2CurrentRow = null;
+        let r2KeywordSolved = false;
+
+        // Hàm chuẩn hóa chuỗi tiếng Việt không dấu để so khớp đáp án linh hoạt
+        function normalizeVN(str) {
+            return str
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .replace(/[^a-zA-Z0-9]/g, '')
+                .toUpperCase();
+        }
+
+        function initRound2() {
+            switchScreen('round2');
+            renderR2Rows();
+            document.getElementById('r2-active-question-box').classList.add('hidden');
+        }
+
+        function renderR2Rows() {
+            const container = document.getElementById('r2-rows-container');
+            container.innerHTML = GAME_DATA.round2.rows.map((row, idx) => {
+                const solved = r2SolvedRows[idx];
+                // Tách các ký tự không tính khoảng trắng để vẽ ô chữ
+                const letters = row.displayAns.split('');
+                return `
+                    <div onclick="selectR2Row(${idx})" class="cursor-pointer p-3.5 rounded-2xl border transition flex flex-wrap items-center justify-between gap-2 ${solved ? 'bg-emerald-950/60 border-emerald-500/50' : 'bg-slate-800/90 hover:bg-slate-800 border-slate-600'}">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg font-olympia font-bold text-xs flex items-center justify-center ${solved ? 'bg-emerald-500 text-slate-950' : 'bg-amber-500 text-slate-950'}">${idx + 1}</span>
+                            <span class="text-xs sm:text-sm font-semibold text-slate-200">${row.label}</span>
+                        </div>
+                        <div class="flex gap-1">
+                            ${letters.map(ch => ch === ' ' ? '<span class="w-2"></span>' : `
+                                <span class="w-7 h-7 rounded bg-slate-950 border ${solved ? 'border-emerald-400 text-emerald-300' : 'border-slate-600 text-transparent'} font-olympia font-extrabold text-xs flex items-center justify-center">
+                                    ${solved ? ch : '?'}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Cập nhật 4 mảnh ghép che ảnh
+            r2SolvedRows.forEach((solved, idx) => {
+                const cover = document.getElementById(`r2-cover-${idx}`);
+                if (cover) {
+                    if (solved || r2KeywordSolved) {
+                        cover.classList.add('opacity-0', 'scale-75', 'pointer-events-none');
+                    } else {
+                        cover.classList.remove('opacity-0', 'scale-75', 'pointer-events-none');
+                    }
+                }
+            });
+        }
+
+        function selectR2Row(idx) {
+            if (r2SolvedRows[idx]) return;
+            clearCurrentTimer();
+            r2CurrentRow = idx;
+            const row = GAME_DATA.round2.rows[idx];
+            document.getElementById('r2-active-question-box').classList.remove('hidden');
+            document.getElementById('r2-current-row-label').innerText = row.label;
+            document.getElementById('r2-question-text').innerText = row.q;
+            const input = document.getElementById('r2-answer-input');
+            input.value = '';
+            input.focus();
+
+            let t = 15;
+            document.getElementById('r2-row-timer').innerText = `${t}s`;
+            activeTimer = setInterval(() => {
+                t--;
+                document.getElementById('r2-row-timer').innerText = `${t}s`;
+                if (t <= 5 && t > 0) playTone('tick');
+                if (t <= 0) clearCurrentTimer();
+            }, 1000);
+        }
+
+        function submitR2RowAnswer() {
+            if (r2CurrentRow === null) return;
+            const userVal = document.getElementById('r2-answer-input').value.trim();
+            const row = GAME_DATA.round2.rows[r2CurrentRow];
+            if (normalizeVN(userVal) === normalizeVN(row.ans) || normalizeVN(userVal) === normalizeVN(row.displayAns)) {
+                playTone('correct');
+                clearCurrentTimer();
+                r2SolvedRows[r2CurrentRow] = true;
+                adjustScore(activeTeamIndex, 20, true);
+                renderR2Rows();
+                document.getElementById('r2-active-question-box').classList.add('hidden');
+            } else {
+                playTone('wrong');
+                document.getElementById('r2-answer-input').classList.add('border-rose-500');
+                setTimeout(() => document.getElementById('r2-answer-input').classList.remove('border-rose-500'), 800);
+            }
+        }
+
+        function openKeywordModal() {
+            playTone('bell');
+            const m = document.getElementById('keyword-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            document.getElementById('keyword-input').value = '';
+            document.getElementById('keyword-input').focus();
+        }
+
+        function closeKeywordModal() {
+            const m = document.getElementById('keyword-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function submitKeywordGuess() {
+            const val = document.getElementById('keyword-input').value.trim();
+            const target1 = normalizeVN(GAME_DATA.round2.keyword);
+            const target2 = normalizeVN(GAME_DATA.round2.keywordDisplay);
+
+            if (normalizeVN(val) === target1 || normalizeVN(val) === target2 || normalizeVN(val) === "TANSAC") {
+                playTone('correct');
+                r2KeywordSolved = true;
+                r2SolvedRows = [true, true, true, true];
+                const solvedCount = r2SolvedRows.filter(Boolean).length;
+                const bonus = 60;
+                adjustScore(activeTeamIndex, bonus, true);
+                closeKeywordModal();
+                renderR2Rows();
+                fireCelebrationConfetti();
+                document.getElementById('r2-keyword-status').innerHTML = `
+                    <div class="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-bold">
+                        🎉 CHÍNH XÁC! TỪ KHÓA: "${GAME_DATA.round2.keywordDisplay}" (+${bonus} điểm cho ${teams[activeTeamIndex].name})
+                    </div>
+                `;
+            } else {
+                playTone('wrong');
+                document.getElementById('keyword-input').value = '';
+                document.getElementById('keyword-input').placeholder = 'Chưa đúng! Hãy thử lại...';
+            }
+        }
+
+        /* =========================================================================
+           PHẦN 6: LOGIC VÒNG 3 - TĂNG TỐC (HÌNH VẼ THÍ NGHIỆM TRỰC QUAN)
+           ========================================================================= */
+        let r3Index = 0;
+        let r3TimeLeft = 20;
+        let r3Locked = false;
+
+        function initRound3() {
+            switchScreen('round3');
+            r3Index = 0;
+            renderR3Question();
+        }
+
+        function getR3SvgVisual(type) {
+            if (type === 'rose_white_light') {
+                return `
+                    <svg viewBox="0 0 280 170" class="w-full max-w-xs">
+                        <text x="15" y="25" fill="#fde047" font-size="11" font-weight="bold">Ánh sáng Mặt Trời (Trắng)</text>
+                        <line x1="25" y1="35" x2="130" y2="95" stroke="#ffffff" stroke-width="5" />
+                        <!-- Bông hoa hồng đỏ -->
+                        <circle cx="145" cy="105" r="22" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>
+                        <path d="M145,127 L145,165" stroke="#22c55e" stroke-width="5"/>
+                        <ellipse cx="160" cy="145" rx="12" ry="6" fill="#22c55e"/>
+                        <!-- Tia tán xạ đỏ tới mắt -->
+                        <line x1="165" y1="95" x2="245" y2="45" stroke="#ef4444" stroke-width="4" stroke-dasharray="5,3"/>
+                        <text x="180" y="35" fill="#fca5a5" font-size="11" font-weight="bold">Tán xạ tia Đỏ tới mắt</text>
+                    </svg>
+                `;
+            } else if (type === 'rose_green_light') {
+                return `
+                    <svg viewBox="0 0 280 170" class="w-full max-w-xs">
+                        <text x="15" y="25" fill="#4ade80" font-size="11" font-weight="bold">Đèn chiếu ánh sáng LỤC</text>
+                        <line x1="25" y1="35" x2="130" y2="95" stroke="#22c55e" stroke-width="5" />
+                        <!-- Bông hoa hồng trong phòng tối -->
+                        <circle cx="145" cy="105" r="22" fill="#1e293b" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="138" y="110" fill="#fff" font-size="14" font-weight="bold">?</text>
+                        <path d="M145,127 L145,165" stroke="#22c55e" stroke-width="5"/>
+                        <text x="175" y="95" fill="#94a3b8" font-size="11">Cánh hoa màu gì?</text>
+                    </svg>
+                `;
+            } else if (type === 'prism_ray_direction') {
+                return `
+                    <svg viewBox="0 0 280 170" class="w-full max-w-xs">
+                        <polygon points="140,20 85,145 195,145" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="3"/>
+                        <text x="135" y="14" fill="#38bdf8" font-size="11" font-weight="bold">A</text>
+                        <text x="72" y="155" fill="#38bdf8" font-size="11" font-weight="bold">B (Đáy) C</text>
+                        <!-- Tia tới -->
+                        <line x1="20" y1="105" x2="112" y2="82" stroke="#eab308" stroke-width="4"/>
+                        <line x1="112" y1="82" x2="168" y2="85" stroke="#eab308" stroke-width="3"/>
+                        <!-- 3 phương án tia ló -->
+                        <line x1="168" y1="85" x2="255" y2="65" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="258" y="68" fill="#cbd5e1" font-size="11">Tia 1</text>
+                        <line x1="168" y1="85" x2="245" y2="30" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="248" y="32" fill="#cbd5e1" font-size="11">Tia 2</text>
+                        <line x1="168" y1="85" x2="255" y2="135" stroke="#eab308" stroke-width="3" stroke-dasharray="4,2"/>
+                        <text x="258" y="138" fill="#fde047" font-size="11" font-weight="bold">Tia 3</text>
+                    </svg>
+                `;
+            } else {
+                return `
+                    <svg viewBox="0 0 280 170" class="w-full max-w-xs">
+                        <line x1="15" y1="85" x2="105" y2="85" stroke="#ffffff" stroke-width="6"/>
+                        <text x="15" y="70" fill="#fff" font-size="10">Sáng trắng</text>
+                        <!-- Kính lọc tím -->
+                        <rect x="105" y="40" width="14" height="90" rx="4" fill="#a855f7" opacity="0.85"/>
+                        <text x="85" y="32" fill="#d8b4fe" font-size="10" font-weight="bold">Kính lọc Tím</text>
+                        <line x1="119" y1="85" x2="205" y2="85" stroke="#a855f7" stroke-width="5"/>
+                        <!-- Trang vở trắng -->
+                        <rect x="205" y="45" width="45" height="75" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                        <text x="215" y="88" fill="#ef4444" font-size="16" font-weight="bold">10đ</text>
+                    </svg>
+                `;
+            }
+        }
+
+        function renderR3Question() {
+            clearCurrentTimer();
+            r3Locked = false;
+            r3TimeLeft = 20;
+            const item = GAME_DATA.round3[r3Index];
+            document.getElementById('r3-q-index').innerText = `${r3Index + 1}/${GAME_DATA.round3.length}`;
+            document.getElementById('r3-question-text').innerText = item.q;
+            document.getElementById('r3-visual-box').innerHTML = getR3SvgVisual(item.visualType);
+            document.getElementById('r3-feedback').classList.add('hidden');
+            document.getElementById('r3-next-btn').classList.add('hidden');
+            document.getElementById('r3-timer').innerText = `${r3TimeLeft}s`;
+
+            document.getElementById('r3-options').innerHTML = item.options.map((opt, idx) => `
+                <button onclick="answerR3(${idx})" id="r3-opt-${idx}" class="p-4 rounded-2xl bg-slate-800 hover:bg-emerald-600/30 border border-slate-600 hover:border-emerald-400 text-left font-semibold text-sm text-slate-100 transition">
+                    ${opt}
+                </button>
+            `).join('');
+
+            activeTimer = setInterval(() => {
+                r3TimeLeft--;
+                document.getElementById('r3-timer').innerText = `${r3TimeLeft}s`;
+                if (r3TimeLeft <= 5 && r3TimeLeft > 0) playTone('tick');
+                if (r3TimeLeft <= 0) {
+                    clearCurrentTimer();
+                    r3Locked = true;
+                    document.getElementById('r3-next-btn').classList.remove('hidden');
+                }
+            }, 1000);
+        }
+
+        function answerR3(choiceIdx) {
+            if (r3Locked) return;
+            r3Locked = true;
+            clearCurrentTimer();
+            const item = GAME_DATA.round3[r3Index];
+            const fb = document.getElementById('r3-feedback');
+            fb.classList.remove('hidden');
+            document.getElementById('r3-next-btn').classList.remove('hidden');
+
+            // Tính điểm theo tốc độ (trên 12s được 40đ, trên 6s được 30đ, còn lại 20đ)
+            const speedBonus = r3TimeLeft >= 12 ? 40 : (r3TimeLeft >= 6 ? 30 : 20);
+
+            if (choiceIdx === item.correct) {
+                playTone('correct');
+                document.getElementById(`r3-opt-${choiceIdx}`).className = "p-4 rounded-2xl bg-emerald-600 border-2 border-emerald-300 text-left font-bold text-white";
+                adjustScore(activeTeamIndex, speedBonus, true);
+                fb.className = "p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 text-sm";
+                fb.innerHTML = `<i class="fa-solid fa-bolt mr-1"></i> <b>Chính xác! +${speedBonus} điểm Tăng Tốc</b> cho ${teams[activeTeamIndex].name}. ${item.explain}`;
+            } else {
+                playTone('wrong');
+                document.getElementById(`r3-opt-${choiceIdx}`).className = "p-4 rounded-2xl bg-rose-600 border-2 border-rose-300 text-left font-bold text-white";
+                document.getElementById(`r3-opt-${item.correct}`).className = "p-4 rounded-2xl bg-emerald-600/80 border-2 border-emerald-300 text-left font-bold text-white";
+                fb.className = "p-4 rounded-2xl bg-rose-500/20 border border-rose-400 text-rose-200 text-sm";
+                fb.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i> <b>Chưa đúng!</b> ${item.explain}`;
+            }
+        }
+
+        function nextR3Question() {
+            r3Index++;
+            if (r3Index >= GAME_DATA.round3.length) {
+                startRound(4);
+            } else {
+                renderR3Question();
+            }
+        }
+
+        /* =========================================================================
+           PHẦN 7: LOGIC VÒNG 4 - VỀ ĐÍCH & NGÔI SAO HY VỌNG
+           ========================================================================= */
+        let r4HopeStar = false;
+        let r4CurrentIdx = null;
+        let r4AnsweredPacks = [false, false, false];
+        let r4Locked = false;
+
+        function initRound4() {
+            switchScreen('round4');
+            r4HopeStar = false;
+            updateHopeStarUI();
+            renderR4Packs();
+            document.getElementById('r4-question-area').classList.add('hidden');
+        }
+
+        function toggleHopeStar() {
+            r4HopeStar = !r4HopeStar;
+            playTone('bell');
+            updateHopeStarUI();
+        }
+
+        function updateHopeStarUI() {
+            const icon = document.getElementById('r4-star-icon');
+            const text = document.getElementById('r4-star-text');
+            const badge = document.getElementById('r4-star-active-badge');
+            if (r4HopeStar) {
+                icon.classList.add('star-active');
+                text.innerText = "NGÔI SAO HY VỌNG: ĐANG BẬT (x2 điểm)";
+                if (badge) badge.classList.remove('hidden');
+            } else {
+                icon.classList.remove('star-active');
+                text.innerText = "ĐẶT NGÔI SAO HY VỌNG (Đang tắt)";
+                if (badge) badge.classList.add('hidden');
+            }
+        }
+
+        function renderR4Packs() {
+            const container = document.getElementById('r4-pack-selector');
+            container.innerHTML = GAME_DATA.round4.map((item, idx) => `
+                <div onclick="openR4Question(${idx})" class="cursor-pointer p-5 rounded-2xl border transition flex flex-col justify-between ${r4AnsweredPacks[idx] ? 'bg-slate-900/50 border-slate-800 opacity-60' : 'bg-slate-900 hover:bg-purple-950/40 border-purple-500/50 hover:border-purple-400 shadow-lg'}">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 font-olympia font-bold text-xs">Câu ${idx + 1}</span>
+                        <span class="font-olympia font-black text-xl text-amber-400">${item.points} ĐIỂM</span>
+                    </div>
+                    <p class="text-sm font-semibold text-white">${item.title}</p>
+                    <div class="mt-3 text-xs text-purple-300 font-bold">
+                        ${r4AnsweredPacks[idx] ? '<i class="fa-solid fa-check mr-1"></i> Đã mở' : 'Click để mở câu hỏi <i class="fa-solid fa-arrow-right ml-1"></i>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openR4Question(idx) {
+            clearCurrentTimer();
+            r4CurrentIdx = idx;
+            r4Locked = false;
+            const item = GAME_DATA.round4[idx];
+
+            document.getElementById('r4-question-area').classList.remove('hidden');
+            document.getElementById('r4-q-badge').innerText = `${item.title} (${item.points} điểm)`;
+            document.getElementById('r4-question-text').innerText = item.q;
+            document.getElementById('r4-feedback').classList.add('hidden');
+            document.getElementById('r4-steal-box').classList.add('hidden');
+            updateHopeStarUI();
+
+            document.getElementById('r4-options').innerHTML = item.options.map((opt, oIdx) => `
+                <button onclick="answerR4(${oIdx})" id="r4-opt-${oIdx}" class="p-4 rounded-2xl bg-slate-800 hover:bg-purple-600/30 border border-slate-600 hover:border-purple-400 text-left font-semibold text-sm md:text-base text-slate-100 transition">
+                    ${opt}
+                </button>
+            `).join('');
+
+            let t = 20;
+            document.getElementById('r4-timer').innerText = `${t}s`;
+            activeTimer = setInterval(() => {
+                t--;
+                document.getElementById('r4-timer').innerText = `${t}s`;
+                if (t <= 5 && t > 0) playTone('tick');
+                if (t <= 0) clearCurrentTimer();
+            }, 1000);
+        }
+
+        function answerR4(choiceIdx) {
+            if (r4Locked) return;
+            r4Locked = true;
+            clearCurrentTimer();
+
+            const item = GAME_DATA.round4[r4CurrentIdx];
+            r4AnsweredPacks[r4CurrentIdx] = true;
+            renderR4Packs();
+
+            const fb = document.getElementById('r4-feedback');
+            fb.classList.remove('hidden');
+
+            if (choiceIdx === item.correct) {
+                playTone('correct');
+                const pts = r4HopeStar ? item.points * 2 : item.points;
+                adjustScore(activeTeamIndex, pts, true);
+                document.getElementById(`r4-opt-${choiceIdx}`).className = "p-4 rounded-2xl bg-emerald-600 border-2 border-emerald-300 text-left font-bold text-white";
+                fb.className = "p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 text-sm";
+                fb.innerHTML = `🎉 <b>Xuất sắc! +${pts} điểm</b> cho ${teams[activeTeamIndex].name}. ${item.explain}`;
+                if (r4HopeStar) fireCelebrationConfetti();
+            } else {
+                playTone('wrong');
+                document.getElementById(`r4-opt-${choiceIdx}`).className = "p-4 rounded-2xl bg-rose-600 border-2 border-rose-300 text-left font-bold text-white";
+                if (r4HopeStar) {
+                    adjustScore(activeTeamIndex, -item.points, false);
+                }
+                // Hiển thị nút cho các đội khác cướp điểm
+                const stealBox = document.getElementById('r4-steal-box');
+                stealBox.classList.remove('hidden');
+                document.getElementById('r4-steal-teams').innerHTML = teams.map((t, tIdx) => tIdx === activeTeamIndex ? '' : `
+                    <button onclick="stealR4Points(${tIdx}, ${item.points})" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
+                        Trao +${item.points}đ cho ${t.name}
+                    </button>
+                `).join('');
+
+                fb.className = "p-4 rounded-2xl bg-rose-500/20 border border-rose-400 text-rose-200 text-sm";
+                fb.innerHTML = `<b>Đáp án đúng là: ${item.options[item.correct]}</b>. ${item.explain}`;
+            }
+
+            r4HopeStar = false;
+            updateHopeStarUI();
+        }
+
+        function stealR4Points(teamIdx, pts) {
+            playTone('correct');
+            adjustScore(teamIdx, pts, true);
+            document.getElementById('r4-steal-box').innerHTML = `<p class="text-sm text-emerald-400 font-bold">Đã cộng +${pts} điểm giành quyền trả lời cho ${teams[teamIdx].name}!</p>`;
+        }
+
+        /* =========================================================================
+           PHẦN 8: MÀN HÌNH VINH DANH & CHẾ ĐỘ GIÁO VIÊN SỬA CÂU HỎI
+           ========================================================================= */
+        function showVictoryScreen() {
+            switchScreen('victory');
+            playTone('correct');
+            fireCelebrationConfetti();
+
+            const sorted = [...teams].sort((a, b) => b.score - a.score);
+            document.getElementById('victory-podium').innerHTML = sorted.map((t, rank) => `
+                <div class="p-5 rounded-2xl border ${rank === 0 ? 'bg-gradient-to-b from-amber-500/25 to-slate-900 border-amber-400 scale-105 shadow-xl' : 'bg-slate-900/90 border-slate-700'} flex flex-col items-center space-y-2">
+                    <div class="text-2xl">${rank === 0 ? '👑 Vô Địch' : (rank === 1 ? '🥈 Á Quân' : '🏅 Tri Ân')}</div>
+                    <div class="font-olympia font-extrabold text-lg text-white">${t.name}</div>
+                    <div class="font-olympia font-black text-3xl text-amber-400">${t.score}đ</div>
+                    <div class="text-xs text-rose-300 font-semibold">🌸 ${t.flowers} Bông hoa Điểm 10</div>
+                </div>
+            `).join('');
+        }
+
+        function fireCelebrationConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+            }
+        }
+
+        function resetAllScores() {
+            teams.forEach(t => { t.score = 0; t.flowers = 0; });
+            r2SolvedRows = [false, false, false, false];
+            r2KeywordSolved = false;
+            r4AnsweredPacks = [false, false, false];
+            switchScreen('home');
+        }
+
+        // Modal Giáo viên chỉnh sửa
+        function openTeacherModal() {
+            const modal = document.getElementById('teacher-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('teacher-team-names').innerHTML = teams.map((t, idx) => `
+                <input type="text" id="edit-team-${idx}" value="${t.name}" class="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-bold">
+            `).join('');
+
+            document.getElementById('teacher-json-editor').value = JSON.stringify(GAME_DATA, null, 2);
+            document.getElementById('teacher-save-msg').classList.add('hidden');
+        }
+
+        function closeTeacherModal() {
+            const modal = document.getElementById('teacher-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveTeacherChanges() {
+            try {
+                teams.forEach((t, idx) => {
+                    const val = document.getElementById(`edit-team-${idx}`).value.trim();
+                    if (val) t.name = val;
+                });
+                const parsed = JSON.parse(document.getElementById('teacher-json-editor').value);
+                GAME_DATA = parsed;
+                renderScoreboard();
+                const msg = document.getElementById('teacher-save-msg');
+                msg.innerText = "✓ Đã lưu tên đội và cập nhật bộ câu hỏi thành công!";
+                msg.classList.remove('hidden');
+                playTone('correct');
+            } catch (err) {
+                const msg = document.getElementById('teacher-save-msg');
+                msg.innerText = "⚠️ Lỗi cú pháp JSON! Vui lòng kiểm tra lại dấu ngoặc kép hoặc dấu phẩy.";
+                msg.className = "text-xs text-rose-400 mt-2";
+                msg.classList.remove('hidden');
+            }
+        }
+
+        function resetDefaultQuestions() {
+            GAME_DATA = JSON.parse(JSON.stringify(DEFAULT_GAME_DATA));
+            document.getElementById('teacher-json-editor').value = JSON.stringify(GAME_DATA, null, 2);
+        }
+
+        // Khởi chạy ứng dụng khi tải trang
+        window.onload = function() {
+            renderScoreboard();
+        };
+    </script>
+</body>
+</html>
